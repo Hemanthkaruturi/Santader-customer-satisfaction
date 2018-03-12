@@ -69,7 +69,7 @@ for(pair in features_pair) {
   }
 }
 
-feature.names <- setdiff(names(train), toRemove)    #setdiff (remove the names in toRemove list from train set)
+feature.names <- setdiff(names(train), toRemove)    #setdiff (remove the names in 'toRemove' list from train set)
 train <- train[, feature.names]
 test <- test[, feature.names]
 
@@ -90,7 +90,8 @@ test$var36 <- as.factor(test$var36)
 library(mice)
 imputed_data <- mice(train[,c(2,135,247)], m=5, maxit = 1, method = 'rf', seed = 500)
 train[,c(2,135,247)] <- complete(imputed_data, 1)
-################ End of Data Preparation ########################
+################################################# End of Data Preparation ##################################################
+
 
 #Preparing Validation set
 library(caTools)
@@ -98,6 +99,17 @@ set.seed(123)
 split <- sample.split(train$TARGET, SplitRatio = 0.80)
 trainset <- subset(train, split == TRUE)
 testset <- subset(train, split == FALSE)
+
+##############################################################
+#Applying kernel PCA for dimensinality reduction
+library(kernlab)
+kpca = kpca(~., data = trainset, kernel = 'rbfdot', features = 200)
+training_set_pca = as.data.frame(predict(kpca, trainset))
+training_set_pca$TARGET = trainset$TARGET
+test_set_pca = as.data.frame(predict(kpca, testset))
+test_set_pca$TARGET = testset$TARGET
+############# Something wrong in PCA #########################
+
 
 #Preparing Model Starts here
 
